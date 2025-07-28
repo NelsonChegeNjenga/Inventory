@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Inventory</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+            background: linear-gradient(135deg, #e8f5e8 0%, #f0f9f0 100%);
+            min-height: 100vh;
+            color: #333;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 { 
+            text-align: center;
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #059669, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 2rem;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .nav { 
+            text-align: center; 
+            margin-bottom: 3rem;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+        }
+
+        .nav a { 
+            text-decoration: none; 
+            font-weight: 600;
+            color: #059669;
+            background: rgba(255,255,255,0.8);
+            padding: 12px 24px;
+            border-radius: 50px;
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(5, 150, 105, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(5, 150, 105, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .nav a:hover::before {
+            left: 100%;
+        }
+
+        .nav a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(5, 150, 105, 0.2);
+            background: rgba(255,255,255,0.95);
+            border-color: #059669;
+        }
+
+        form, .modal-content { 
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            padding: 2rem; 
+            margin-bottom: 2rem; 
+            border-radius: 20px;
+            box-shadow: 
+                0 20px 40px rgba(0,0,0,0.1),
+                0 0 0 1px rgba(255,255,255,0.5);
+            border: 1px solid rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        form::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #059669, #10b981, #059669);
+            background-size: 200% 100%;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { background-position: 200% 0; }
+            50% { background-position: -200% 0; }
+        }
+
+        form h3 {
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .form-row { 
+            display: flex; 
+            gap: 1rem; 
+            align-items: center; 
+            flex-wrap: wrap;
+        }
+
+        .form-row label { 
+            font-weight: 600;
+            color: #4a5568;
+            min-width: 80px;
+        }
+
+        .form-row input[type="text"],
+        .form-row input[type="number"] {
+            padding: 12px 16px;
+            width: 200px;
+            border: 2px solid rgba(5, 150, 105, 0.2);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.9);
+        }
+
+        .form-row input[type="text"]:focus,
+        .form-row input[type="number"]:focus {
+            outline: none;
+            border-color: #059669;
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .form-row input[type="submit"] {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);
+        }
+
+        .form-row input[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(5, 150, 105, 0.4);
+        }
+
+        .table-container {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 
+                0 20px 40px rgba(0,0,0,0.1),
+                0 0 0 1px rgba(255,255,255,0.5);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .table-header {
+            padding: 1.5rem 2rem;
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: white;
+        }
+
+        .table-header h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: transparent;
+        }
+
+        th, td {
+            padding: 1rem 2rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        th {
+            background: rgba(5, 150, 105, 0.05);
+            font-weight: 600;
+            color: #4a5568;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            letter-spacing: 0.5px;
+        }
+
+        tr {
+            transition: all 0.3s ease;
+        }
+
+        tr:hover {
+            background: rgba(5, 150, 105, 0.05);
+            transform: scale(1.01);
+        }
+
+        .btn-delete {
+            color: #e53e3e;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-delete:hover {
+            background: rgba(229, 62, 62, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .btn-edit {
+            color: #059669;
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-edit:hover {
+            background: rgba(5, 150, 105, 0.1);
+            transform: translateY(-1px);
+        }
+
+        /* Modal Styling */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; 
+            left: 0;
+            width: 100%; 
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            width: 500px;
+            max-width: 90vw;
+            position: relative;
+            animation: slideIn 0.3s ease;
+            margin: 0;
+        }
+
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: #718096;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close:hover {
+            background: rgba(0,0,0,0.1);
+            color: #2d3748;
+            transform: rotate(90deg);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .form-row input[type="text"],
+            .form-row input[type="number"] {
+                width: 100%;
+            }
+            
+            th, td {
+                padding: 0.75rem 1rem;
+                font-size: 0.875rem;
+            }
+        }
+
+        /* Clean, minimal design without particles */
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Inventory</h1>
+
+    <div class="nav">
+        <a href="">Add Item</a>
+        <a href="">View Items</a>
+    </div>
+
+    <form id="add" action="/add" method="POST">
+        <h3>Add Item</h3>
+        <div class="form-row">
+            <label>Name:</label>
+            <input type="text" name="name" required>
+
+            <label>Quantity:</label>
+            <input type="number" name="quantity" required>
+
+            <label>Description:</label>
+            <input type="text" name="description" required>
+
+            <input type="submit" value="Add">
+        </div>
+    </form>
+
+    <div class="table-container">
+        <div class="table-header">
+            <h3 id="table">Inventory List</h3>
+        </div>
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.description }}</td>
+                <td>
+                    <span class="btn-edit" onclick="openEditModal('{{ item.id }}')">Edit</span> |
+                    <a href="/delete/{{ item.id }}" class="btn-delete">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeEditModal()">&times;</span>
+        <h3>Edit Item</h3>
+        <form id="editForm" method="POST">
+            <div class="form-row">
+                <label>Name:</label>
+                <input type="text" name="name" id="editName" required>
+
+                <label>Quantity:</label>
+                <input type="number" name="quantity" id="editQuantity" required>
+
+                <label>Description:</label>
+                <input type="text" name="description" id="editDescription" required>
+
+                <input type="submit" value="Update">
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Create floating particles
+    function createParticles() {
+        // Particles removed - clean interface
+    }
+
+    createParticles();
+
+    function openEditModal(id) {
+        fetch(`/get_item/${id}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Item not found");
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('editName').value = data.name || '';
+                document.getElementById('editQuantity').value = data.quantity || '';
+                document.getElementById('editDescription').value = data.description || '';
+                document.getElementById('editForm').action = `/edit/${id}`;
+                document.getElementById('editModal').style.display = 'flex';
+            })
+            .catch(err => {
+                alert("Could not load item for editing.");
+                console.error(err);
+            });
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('editModal');
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+</script>
+</body>
+</html>
